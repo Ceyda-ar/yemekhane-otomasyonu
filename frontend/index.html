@@ -3,68 +3,314 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Yemekhane Otomasyonu · Başlangıç</title>
+  <title>Kampüs Yemekhane Otomasyonu</title>
   <link rel="stylesheet" href="/css/temel.css">
   <style>
-    /* Yalnızca bu geçici sayfaya ait stiller */
-    .fis {
-      background: var(--yuzey);
-      margin-block: 2rem;
-      padding: 1.5rem var(--bosluk);
-      border-radius: var(--kose);
-      /* yemek fişi görünümü: alt kenarda yırtma çizgisi */
-      border-bottom: 2px dashed var(--cizgi);
+    .ust-bar {
+      background: var(--ana);
+      color: #fff;
+      padding: 0.75rem 0;
+      margin-bottom: 1rem;
     }
-    .fis h1 { margin-bottom: 0.25rem; }
-    .fis .alt { color: var(--metin-soluk); margin-bottom: 1.5rem; }
-    .servisler { width: 100%; border-collapse: collapse; font-size: var(--boyut-kucuk); }
-    .servisler th, .servisler td { text-align: left; padding: 0.5rem 0.25rem; border-bottom: 1px solid var(--cizgi); }
-    .servisler td:last-child { white-space: nowrap; }
-    #uygulama-durumu { margin-top: 1.5rem; }
+    .ust-bar-ic {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .bakiye-rozet {
+      background: var(--vurgu);
+      color: #1F2A2E;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: var(--boyut-kucuk);
+    }
+    .sekme-menu {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .sekme-btn {
+      background: var(--yuzey);
+      color: var(--metin);
+      border: 1px solid var(--cizgi);
+      padding: 0.45rem 0.75rem;
+      border-radius: var(--kose);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: var(--boyut-kucuk);
+      min-height: 40px;
+    }
+    .sekme-btn.aktif {
+      background: var(--ana);
+      color: #fff;
+      border-color: var(--ana);
+    }
+    .kart {
+      background: var(--yuzey);
+      border: 1px solid var(--cizgi);
+      border-radius: var(--kose);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .izgara {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0.75rem;
+    }
+    .form-satir {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .rozet {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--zemin);
+    }
+    .rozet-vej { background: #E6F2E6; color: #2E6B30; }
+    .rozet-alerjen { background: #FCE8E6; color: #B3261E; }
+    .uyari-kutu {
+      background: var(--hata-zemin);
+      color: var(--hata);
+      border: 1px solid var(--hata);
+      border-radius: var(--kose);
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.6rem;
+      font-size: var(--boyut-kucuk);
+      font-weight: 600;
+    }
+    .alerjen-liste {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+    }
+    .alerjen-etiket {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--zemin);
+      padding: 0.4rem 0.65rem;
+      border-radius: var(--kose);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .alerjen-etiket input { width: auto; }
+    .gizli { display: none !important; }
+    table { width: 100%; border-collapse: collapse; font-size: var(--boyut-kucuk); }
+    th, td { text-align: left; padding: 0.5rem 0.35rem; border-bottom: 1px solid var(--cizgi); }
+    .dugme-kucuk { min-height: 36px; padding: 0.35rem 0.7rem; font-size: var(--boyut-kucuk); }
+    .dugme-ikincil { background: var(--metin-soluk); }
+    .dugme-tehlike { background: var(--hata); }
   </style>
 </head>
 <body>
-  <main class="kapsayici">
-    <section class="fis">
-      <h1>Yemekhane Otomasyonu</h1>
-      <p class="alt">Apache çalışıyor. Bu sayfa başlangıç paketine ait; kendi giriş ekranınızla değiştirin.</p>
+  <header class="ust-bar">
+    <div class="kapsayici ust-bar-ic">
+      <strong>Kampüs Yemekhane</strong>
+      <div id="kullanici-panel" class="gizli" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+        <span id="kullanici-ad" style="font-size:0.875rem;"></span>
+        <span id="kullanici-bakiye" class="bakiye-rozet">0.00 TL</span>
+        <button type="button" id="cikis-btn" class="sekme-btn" style="min-height:34px;">Çıkış</button>
+      </div>
+    </div>
+  </header>
 
-      <div class="tablo-kaydir">
-        <table class="servisler">
-          <thead>
-            <tr><th>Servis</th><th>Görevi</th><th>Bilgisayarınızdan</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>frontend</td><td>HTML/CSS, yönlendirme</td><td>localhost:8080</td></tr>
-            <tr><td>mysql-primary</td><td>yazma</td><td>localhost:3307</td></tr>
-            <tr><td>mysql-replica</td><td>okuma, salt okunur</td><td>localhost:3308</td></tr>
-            <tr><td>redis</td><td>menü önbelleği, oturum</td><td>localhost:6379</td></tr>
-            <tr><td>uygulama</td><td>sizin yazacağınız servis</td><td>Apache üzerinden</td></tr>
-          </tbody>
-        </table>
+  <main class="kapsayici">
+    <div id="genel-mesaj" class="bildirim gizli" role="alert" style="margin-bottom:1rem;"></div>
+
+    <section id="ekran-giris" class="kart" style="max-width:420px;margin:2rem auto;">
+      <h1>Giriş Yap</h1>
+      <p style="color:var(--metin-soluk);font-size:0.875rem;">Kampüs hesabınızla oturum açın.</p>
+      <form id="giris-form">
+        <div style="margin-bottom:0.75rem;">
+          <label for="eposta">E-posta</label>
+          <input type="email" id="eposta" required placeholder="ornek@kampus.edu.tr" value="mehmet.yildiz@ogr.kampus.edu.tr">
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label for="sifre">Şifre</label>
+          <input type="password" id="sifre" required value="Yemek2026!">
+        </div>
+        <button type="submit" class="dugme" style="width:100%;">Giriş Yap</button>
+      </form>
+      <div style="margin-top:1rem;font-size:0.8rem;color:var(--metin-soluk);">
+        <strong>Hızlı Test Hesapları (Şifre: Yemek2026!):</strong><br>
+        Öğrenci: mehmet.yildiz@ogr.kampus.edu.tr<br>
+        Yetersiz Bakiye: ayse.demir@ogr.kampus.edu.tr<br>
+        Personel: murat.kaya@kampus.edu.tr<br>
+        Yönetici: leyla.arslan@kampus.edu.tr
+      </div>
+    </section>
+
+    <section id="ana-icerik" class="gizli">
+      <nav class="sekme-menu" aria-label="Ana menü">
+        <button type="button" class="sekme-btn aktif" data-sekme="gunun-menusu">Günün Menüsü</button>
+        <button type="button" class="sekme-btn" data-sekme="haftalik-menu">Haftalık & Rezervasyon</button>
+        <button type="button" class="sekme-btn" data-sekme="rezervasyonlarim">Rezervasyonlarım</button>
+        <button type="button" class="sekme-btn" data-sekme="bakiye">Bakiye</button>
+        <button type="button" class="sekme-btn" data-sekme="degerlendirme">Değerlendirme</button>
+        <button type="button" class="sekme-btn" data-sekme="alerjenler">Alerjenlerim</button>
+        <button type="button" id="yonetim-sekme-btn" class="sekme-btn gizli" data-sekme="yonetim">Yönetici Paneli</button>
+      </nav>
+
+      <div id="sekme-gunun-menusu" class="kart">
+        <h2>Günün Menüsü</h2>
+        <div class="form-satir">
+          <div>
+            <label for="gm-yemekhane">Yemekhane</label>
+            <select id="gm-yemekhane"></select>
+          </div>
+          <div>
+            <label for="gm-tarih">Tarih</label>
+            <input type="date" id="gm-tarih">
+          </div>
+          <div>
+            <label for="gm-ogun">Öğün</label>
+            <select id="gm-ogun"></select>
+          </div>
+        </div>
+        <button type="button" id="gm-getir-btn" class="dugme">Menüyü Göster</button>
+        <div id="gm-sonuc" style="margin-top:1rem;"></div>
       </div>
 
-      <p id="uygulama-durumu" class="bildirim" role="status">Uygulama servisi kontrol ediliyor…</p>
+      <div id="sekme-haftalik-menu" class="kart gizli">
+        <h2>Haftalık Menü ve Rezervasyon</h2>
+        <div class="form-satir">
+          <div>
+            <label for="hm-yemekhane">Yemekhane</label>
+            <select id="hm-yemekhane"></select>
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button type="button" id="hm-getir-btn" class="dugme">Listele</button>
+          </div>
+        </div>
+        <div id="hm-liste" class="izgara"></div>
+      </div>
+
+      <div id="sekme-rezervasyonlarim" class="kart gizli">
+        <h2>Rezervasyonlarım</h2>
+        <div class="tablo-kaydir">
+          <table>
+            <thead>
+              <tr><th>Tarih</th><th>Yemekhane / Öğün</th><th>Porsiyon</th><th>Ücret</th><th>Durum</th><th>İşlem</th></tr>
+            </thead>
+            <tbody id="rez-tablo"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="sekme-bakiye" class="kart gizli">
+        <h2>Bakiye İşlemleri</h2>
+        <form id="bakiye-form" class="form-satir" style="max-width:420px;">
+          <div>
+            <label for="yukle-tutar">Yüklenecek Tutar (10 - 1000 TL)</label>
+            <input type="number" id="yukle-tutar" min="10" max="1000" step="1" value="50" required>
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button type="submit" class="dugme">Bakiye Yükle</button>
+          </div>
+        </form>
+        <h3>Hareket Geçmişi</h3>
+        <div class="tablo-kaydir">
+          <table>
+            <thead>
+              <tr><th>Tarih</th><th>İşlem</th><th>Açıklama</th><th>Tutar</th></tr>
+            </thead>
+            <tbody id="hareket-tablo"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="sekme-degerlendirme" class="kart gizli">
+        <h2>Menü Değerlendirme</h2>
+        <p style="font-size:0.875rem;color:var(--metin-soluk);">Yalnızca turnikeden geçiş yaptığınız (kullanılmış) menüleri oylayabilirsiniz.</p>
+        <form id="deg-form" style="max-width:480px;">
+          <div style="margin-bottom:0.75rem;">
+            <label for="deg-menu">Kullanılmış Menü</label>
+            <select id="deg-menu" required></select>
+          </div>
+          <div style="margin-bottom:0.75rem;">
+            <label for="deg-puan">Puan (1 - 5)</label>
+            <select id="deg-puan" required>
+              <option value="5">5 - Çok İyi</option>
+              <option value="4">4 - İyi</option>
+              <option value="3">3 - Orta</option>
+              <option value="2">2 - Zayıf</option>
+              <option value="1">1 - Kötü</option>
+            </select>
+          </div>
+          <div style="margin-bottom:0.75rem;">
+            <label for="deg-yorum">Yorum (İsteğe bağlı)</label>
+            <textarea id="deg-yorum" rows="2" maxlength="500"></textarea>
+          </div>
+          <button type="submit" class="dugme">Değerlendirmeyi Kaydet</button>
+        </form>
+      </div>
+
+      <div id="sekme-alerjenler" class="kart gizli">
+        <h2>Alerjen Tercihlerim</h2>
+        <p style="font-size:0.875rem;color:var(--metin-soluk);">Hassasiyetiniz olan alerjenleri seçin. Menüde bu alerjenlerden biri bulunduğunda otomatik uyarı gösterilir.</p>
+        <form id="alerjen-form">
+          <div id="alerjen-secenekler" class="alerjen-liste"></div>
+          <button type="submit" class="dugme">Tercihleri Kaydet</button>
+        </form>
+      </div>
+
+      <div id="sekme-yonetim" class="kart gizli">
+        <h2>Yönetici Paneli · Menü Oluştur / Güncelle</h2>
+        <form id="yonetim-form">
+          <div class="form-satir">
+            <div>
+              <label for="yn-yemekhane">Yemekhane</label>
+              <select id="yn-yemekhane" required></select>
+            </div>
+            <div>
+              <label for="yn-tarih">Tarih</label>
+              <input type="date" id="yn-tarih" required>
+            </div>
+            <div>
+              <label for="yn-ogun">Öğün</label>
+              <select id="yn-ogun" required></select>
+            </div>
+          </div>
+          <div class="form-satir">
+            <div>
+              <label for="yn-ogr-fiyat">Öğrenci Fiyatı (TL)</label>
+              <input type="number" id="yn-ogr-fiyat" step="0.5" value="25" required>
+            </div>
+            <div>
+              <label for="yn-per-fiyat">Personel Fiyatı (TL)</label>
+              <input type="number" id="yn-per-fiyat" step="0.5" value="60" required>
+            </div>
+          </div>
+          <div style="margin-bottom:0.75rem;">
+            <label for="yn-yemekler">Yemekler (Ctrl ile birden fazla seçin)</label>
+            <select id="yn-yemekler" multiple size="6" required></select>
+          </div>
+          <button type="submit" class="dugme">Menüyü Kaydet ve Önbelleği Güncelle</button>
+        </form>
+
+        <h3 style="margin-top:1.5rem;">Menü Doluluk ve Puan Raporu</h3>
+        <div class="tablo-kaydir">
+          <table>
+            <thead>
+              <tr><th>Tarih</th><th>Yemekhane / Öğün</th><th>Doluluk</th><th>Ortalama Puan</th><th>İşlem</th></tr>
+            </thead>
+            <tbody id="yn-rapor-tablo"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
   </main>
 
-  <script>
-    // Web API modunda /api/ isteği uygulamaya gider. 502/503 ise uygulama yok ya da çalışmıyor.
-    const kutu = document.getElementById('uygulama-durumu');
-    fetch('/api/', { headers: { Accept: 'application/json' } })
-      .then(yanit => {
-        if (yanit.status === 502 || yanit.status === 503) {
-          kutu.textContent = 'Uygulama servisine ulaşılamıyor. docker-compose.yml içindeki uygulama servisini ekleyip "docker compose up -d" çalıştırın.';
-          kutu.classList.add('bildirim-hata');
-        } else {
-          kutu.textContent = 'Uygulama servisi yanıt veriyor (HTTP ' + yanit.status + ').';
-          kutu.classList.add('bildirim-basari');
-        }
-      })
-      .catch(() => {
-        kutu.textContent = 'İstek gönderilemedi. Apache günlüğüne bakın: docker compose logs frontend';
-        kutu.classList.add('bildirim-hata');
-      });
-  </script>
+  <script src="/js/uygulama.js"></script>
 </body>
 </html>
