@@ -1,8 +1,23 @@
 SET NAMES utf8mb4;
 USE yemekhane;
 
-ALTER TABLE rezervasyonlar
-    ADD COLUMN porsiyon ENUM('tam','yarim') NOT NULL DEFAULT 'tam' AFTER menu_id;
+SET @kolon_var = (
+    SELECT COUNT(*)
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = 'yemekhane'
+      AND TABLE_NAME = 'rezervasyonlar'
+      AND COLUMN_NAME = 'porsiyon'
+);
+
+SET @sql_ekle = IF(
+    @kolon_var = 0,
+    'ALTER TABLE rezervasyonlar ADD COLUMN porsiyon ENUM(''tam'',''yarim'') NOT NULL DEFAULT ''tam'' AFTER menu_id',
+    'SELECT 1'
+);
+
+PREPARE stmt FROM @sql_ekle;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 CREATE TABLE IF NOT EXISTS kullanici_alerjenleri (
     kullanici_id INT UNSIGNED NOT NULL,
@@ -25,6 +40,7 @@ BEGIN
     DECLARE v_rol          VARCHAR(10)   DEFAULT NULL;
     DECLARE v_aktif        TINYINT       DEFAULT NULL;
     DECLARE v_bakiye       DECIMAL(10,2) DEFAULT NULL;
+    DECLARE v_ogun_id      TINYINT       DEFAULT NULL;
     DECLARE v_son          DATETIME      DEFAULT NULL;
     DECLARE v_kapasite     INT           DEFAULT NULL;
     DECLARE v_ogr_fiyat    DECIMAL(8,2)  DEFAULT NULL;
@@ -60,8 +76,8 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Hesabınız pasif durumda.';
     END IF;
 
-    SELECT TIMESTAMP(m.tarih, o.son_saat), yh.kapasite, m.ogrenci_fiyati, m.personel_fiyati
-      INTO v_son, v_kapasite, v_ogr_fiyat, v_per_fiyat
+    SELECT m.ogun_id, TIMESTAMP(m.tarih, o.son_saat), yh.kapasite, m.ogrenci_fiyati, m.personel_fiyati
+      INTO v_ogun_id, v_son, v_kapasite, v_ogr_fiyat, v_per_fiyat
       FROM menuler m
       JOIN ogunler o       ON o.id  = m.ogun_id
       JOIN yemekhaneler yh ON yh.id = m.yemekhane_id
@@ -69,6 +85,9 @@ BEGIN
        FOR UPDATE;
     IF v_son IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Menü bulunamadı.';
+    END IF;
+    IF v_ogun_id = 1 AND v_porsiyon = 'yarim' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Kahvaltı öğününde yarım porsiyon seçilemez.';
     END IF;
     IF NOW() >= v_son THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Bu menü için rezervasyon süresi doldu.';
@@ -90,7 +109,7 @@ BEGIN
     END IF;
 
     SET v_taban_ucret = IF(v_rol = 'ogrenci', v_ogr_fiyat, v_per_fiyat);
-    SET v_ucret = IF(v_porsiyon = 'yarim', ROUND(v_taban_ucret * 0.5, 2), v_taban_ucret);
+    SET v_ucret = IF(v_porsiyon = 'yarim', ROUND(v_taban_ucret * 0.60, 2), v_taban_ucret);
 
     IF v_bakiye < v_ucret THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Bakiye yetersiz.';
@@ -116,7 +135,7 @@ BEGIN
         'rezervasyon',
         -v_ucret,
         v_rez_id,
-        IF(v_porsiyon = 'yarim', 'Rezervasyon (Yarım Porsiyon)', 'Rezervasyon (Tam Porsiyon)')
+        IF(v_porsiyon = 'yarim', 'Rezervasyon (Yarım Porsiyon - %60)', 'Rezervasyon (Tam Porsiyon)')
     );
 
     COMMIT;
